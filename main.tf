@@ -14,8 +14,8 @@ provider "aws" {
 module "iam" {
   source = "./modules/iam"
 
-  project_name = var.project_name
-  region       = var.region
+  project_prefix = var.project_prefix
+  region         = var.region
 }
 
 module "ecs" {

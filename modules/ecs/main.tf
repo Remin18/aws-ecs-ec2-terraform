@@ -1,9 +1,9 @@
 resource "aws_ecs_cluster" "this" {
-  name = "${var.project_name}-cluster"
+  name = "${var.project_prefix}-cluster"
 }
 
 resource "aws_security_group" "ecs_sg" {
-  name   = "${var.project_name}-ecs-sg"
+  name   = "${var.project_prefix}-ecs-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -33,7 +33,7 @@ data "aws_ssm_parameter" "amzn_ami" {
 }
 
 resource "aws_launch_template" "ecs_ec2" {
-  name                   = "${var.project_name}-ecs-ec2-template"
+  name                   = "${var.project_prefix}-ecs-ec2-template"
   image_id               = data.aws_ssm_parameter.amzn_ami.value
   instance_type          = var.ecs_instance_type
   vpc_security_group_ids = [aws_security_group.ecs_sg.id]
@@ -55,7 +55,7 @@ resource "aws_launch_template" "ecs_ec2" {
 }
 
 resource "aws_autoscaling_group" "ecs" {
-  name                      = "${var.project_name}-ecs-asg"
+  name                      = "${var.project_prefix}-ecs-asg"
   vpc_zone_identifier       = var.subnet_ids
   health_check_grace_period = 0
   health_check_type         = "EC2"
@@ -71,13 +71,13 @@ resource "aws_autoscaling_group" "ecs" {
 
   tag {
     key                 = "Name"
-    value               = "${var.project_name}-ecs-instance"
+    value               = "${var.project_prefix}-ecs-instance"
     propagate_at_launch = true
   }
 }
 
 resource "aws_ecs_capacity_provider" "this" {
-  name = "${var.project_name}-ecs-ec2-cp"
+  name = "${var.project_prefix}-ecs-ec2-cp"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ecs.arn
@@ -104,12 +104,12 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "jenkins" {
-  name              = "${var.project_name}-log"
+  name              = "${var.project_prefix}-log"
   retention_in_days = 14
 }
 
 resource "aws_ecs_task_definition" "jenkins" {
-  family             = "${var.project_name}-taskdef"
+  family             = "${var.project_prefix}-taskdef"
   network_mode       = "bridge"
   cpu                = 512
   memory             = 512
@@ -143,8 +143,8 @@ resource "aws_ecs_task_definition" "jenkins" {
       ]
       mountPoints = [
         {
-          sourceVolume   = var.source_volume
-          containerPath  = var.container_path
+          sourceVolume  = var.source_volume
+          containerPath = var.container_path
         }
       ]
       logConfiguration = {
@@ -160,7 +160,7 @@ resource "aws_ecs_task_definition" "jenkins" {
 }
 
 resource "aws_ecs_service" "jenkins" {
-  name                   = "${var.project_name}-ecs-service"
+  name                   = "${var.project_prefix}-ecs-service"
   cluster                = aws_ecs_cluster.this.id
   task_definition        = aws_ecs_task_definition.jenkins.arn
   desired_count          = 1

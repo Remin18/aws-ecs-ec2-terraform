@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "ecs_instance_assume_role" {
 }
 
 resource "aws_iam_role" "ecs_instance_role" {
-  name               = "${var.project_name}-instance-role"
+  name               = "${var.project_prefix}-instance-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_instance_assume_role.json
 }
 
@@ -25,9 +25,9 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_role_ssm_policy" {
 }
 
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name        = "${var.project_name}-ecs-instance-profile"
-  path        = "/ecs/instance/"
-  role        = aws_iam_role.ecs_instance_role.name
+  name = "${var.project_prefix}-ecs-instance-profile"
+  path = "/ecs/instance/"
+  role = aws_iam_role.ecs_instance_role.name
 }
 
 # ECSロール
@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "ecs_task_doc" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "${var.project_name}-task-role"
+  name               = "${var.project_prefix}-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_doc.json
 }
 
@@ -54,7 +54,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_ssm_policy" {
 }
 
 resource "aws_iam_role" "ecs_exec_role" {
-  name               = "${var.project_name}-exec-role"
+  name               = "${var.project_prefix}-exec-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_doc.json
 }
 
